@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { RecordRTCPromisesHandler, StereoAudioRecorder } from 'recordrtc'
-import Navigation from "./components/Navigation";
+// import Navigation from "./components/Navigation";
 let FileSaver = require('file-saver');
 const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia || navigator.msGetUserMedia);
@@ -20,10 +20,10 @@ class App extends Component {
       micEnabled: false,
       recordFlag: true,
       playFlag: true,
-      audio: null,
+      audio: new Audio(),
       rtcSession: {
         type: 'audio',
-        mimeType: 'audio/ogg',
+        mimeType: 'audio/wav',
         audio: true,
         recorderType: StereoAudioRecorder
       }
@@ -39,7 +39,12 @@ class App extends Component {
       return;
     }
     this.requestUserMedia()
+    const audio = this.state.audio;
+    audio.addEventListener("ended", () => {
+      this.stopAudio()
+    })
   }
+
 
   requestUserMedia = async () => {
     console.log('requestUserMedia')
@@ -55,8 +60,12 @@ class App extends Component {
 
   startRecording = async () => {
     this.requestUserMedia()
+    if (!this.state.playFlag) {
+      this.stopAudio()
+    }
     this.setState(prevState => ({
-      recordFlag: !prevState.recordFlag
+      recordFlag: !prevState.recordFlag,
+      playFlag: true
     }))
     let stream = await navigator.mediaDevices.getUserMedia(this.state.rtcSession, { audio: true });
     this.setState({ recordAudio: new RecordRTCPromisesHandler(stream, this.state.rtcSession) });
@@ -64,7 +73,7 @@ class App extends Component {
 
   }
 
-  stopRecord = async () => {
+  stopRecording = async () => {
     this.requestUserMedia();
     this.setState(prevState => ({
       recordFlag: !prevState.recordFlag
@@ -75,13 +84,15 @@ class App extends Component {
   }
 
 
-  playAudio = () => {
+  playAudio = async () => {
     this.setState(prevState => ({
       playFlag: !prevState.playFlag
     }))
-    const audio = new Audio(this.state.url)
-    this.setState({ audio })
+    const audio = this.state.audio
+    audio.src = this.state.url
+    audio.preload = "metadata"
     audio.play();
+    this.setState({ audio });
   }
 
   stopAudio = () => {
@@ -90,6 +101,8 @@ class App extends Component {
     }))
     const audio = this.state.audio;
     audio.pause()
+    audio.currentTime = 0;
+    this.setState({ audio: audio });
 
   }
 
@@ -107,7 +120,7 @@ class App extends Component {
     else if (this.state.recordFlag) {
       recordButton = <Button variant="primary" size="lg" onClick={this.startRecording} active style={{ marginBottom: "20px" }} >Start Recording</Button>
     } else {
-      recordButton = <Button variant="primary" size="lg" onClick={this.stopRecord} active style={{ marginBottom: "20px" }} >Stop Recording</Button>
+      recordButton = <Button variant="primary" size="lg" onClick={this.stopRecording} active style={{ marginBottom: "20px" }} >Stop Recording</Button>
     }
 
     if (this.state.data && this.state.recordFlag && this.state.playFlag) {
@@ -119,8 +132,8 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <Navigation />
-        <Container>
+        {/* <Navigation /> */}
+        <Container style={{ marginTop: "50px" }}>
           <Row>
             <Col>
               {recordButton}
