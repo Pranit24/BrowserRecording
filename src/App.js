@@ -107,7 +107,7 @@ class App extends Component {
   }
 
   saveAudio = () => {
-    FileSaver.saveAs(this.state.data, "audio.ogg");
+    FileSaver.saveAs(this.state.data, "audio.wav");
   }
 
 
