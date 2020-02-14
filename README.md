@@ -3,4 +3,4 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Browser Recorded
 Using React
 
-Website:[https://Pranit24.github.io/BrowserRecording](https://Pranit24.github.io/BrowserRecording)
+[Click Here](https://Pranit24.github.io/BrowserRecording) for demo

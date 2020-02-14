@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import './App.css';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { RecordRTCPromisesHandler, StereoAudioRecorder } from 'recordrtc'
+import Header from "./components/Header"
 // import Navigation from "./components/Navigation";
 let FileSaver = require('file-saver');
-const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
+const hasGetUserMedia = !!(navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia || navigator.msGetUserMedia);
 
 
@@ -132,7 +133,7 @@ class App extends Component {
     }
     return (
       <div className="App">
-        {/* <Navigation /> */}
+        {Header()}
         <Container style={{ marginTop: "50px" }}>
           <Row>
             <Col>
@@ -146,6 +147,9 @@ class App extends Component {
             <Col>
               {saveButton}
             </Col>
+            <Col></Col>
+            <Col></Col>
+            <Col></Col>
           </Row>
         </Container>
         <br />
