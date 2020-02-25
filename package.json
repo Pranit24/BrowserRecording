@@ -10,12 +10,15 @@
     "@testing-library/user-event": "^7.2.1",
     "bootstrap": "^4.4.1",
     "file-saver": "^2.0.2",
+    "opus-recorder": "^6.1.1",
+    "opusenc.js": "^0.1.10",
     "react": "^16.12.0",
     "react-bootstrap": "^1.0.0-beta.16",
     "react-dom": "^16.12.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.3.1",
-    "recordrtc": "^5.5.8"
+    "recordrtc": "^5.5.8",
+    "save": "^2.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -41,6 +44,7 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^2.2.0"
+    "gh-pages": "^2.2.0",
+    "opus-media-recorder": "^0.7.19"
   }
 }

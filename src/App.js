@@ -3,11 +3,19 @@ import './App.css';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { RecordRTCPromisesHandler, StereoAudioRecorder } from 'recordrtc'
 import Header from "./components/Header"
-// import Navigation from "./components/Navigation";
+import OpusMediaRecorder from 'opus-media-recorder'
+// opus-media-recorder options
+const workerOptions = {
+  encoderWorkerFactory: function () {
+    return new Worker(process.env.PUBLIC_URL + '/opus-media-recorder/encoderWorker.umd.js')
+  },
+  OggOpusEncoderWasmPath: process.env.PUBLIC_URL + '/opus-media-recorder/OggOpusEncoder.wasm',
+  WebMOpusEncoderWasmPath: process.env.PUBLIC_URL + '/opus-media-recorder/WebMOpusEncoder.wasm',
+};
+
 let FileSaver = require('file-saver');
 const hasGetUserMedia = !!(navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia || navigator.msGetUserMedia);
-
 
 class App extends Component {
   constructor(props) {
@@ -51,6 +59,9 @@ class App extends Component {
     console.log('requestUserMedia')
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (!window.MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+        window.MediaRecorder = OpusMediaRecorder
+      }
       this.setState({ micEnabled: true })
     } catch (err) {
       alert("Enable microphone and refresh")
@@ -71,6 +82,36 @@ class App extends Component {
     let stream = await navigator.mediaDevices.getUserMedia(this.state.rtcSession, { audio: true });
     this.setState({ recordAudio: new RecordRTCPromisesHandler(stream, this.state.rtcSession) });
     this.state.recordAudio.startRecording();
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      const options = { mimeType: 'audio/ogg' }
+      this.recorder = new MediaRecorder(stream, options, workerOptions);
+      this.setState({ state: 'inactive' });
+      this.recorder.start();
+
+      this.recorder.addEventListener('dataavailable', (e) => {
+        console.log('Recording stopped, data available');
+        this.onDataAvailable(e);
+      });
+      this.recorder.addEventListener('start', (e) => {
+        console.log('start');
+        this.setState({ state: 'recording' });
+      })
+      this.recorder.addEventListener('stop', (e) => {
+        console.log('stop');
+        this.setState({ state: 'inactive' });
+      })
+      this.recorder.addEventListener('pause', (e) => {
+        console.log('pause');
+        this.setState({ state: 'paused' });
+      })
+      this.recorder.addEventListener('resume', (e) => {
+        console.log('resume');
+        this.setState({ state: 'recording' });
+      })
+      this.recorder.addEventListener('error', (e) => {
+        console.log('error');
+      })
+    });
 
   }
 
@@ -81,6 +122,7 @@ class App extends Component {
     }))
     let blob = await this.state.recordAudio.stopRecording();
     const data = await this.state.recordAudio.getBlob();
+    console.log(this.state.audio.duration)
     this.setState({ data, url: blob })
   }
 
@@ -94,6 +136,11 @@ class App extends Component {
     audio.preload = "metadata"
     audio.play();
     this.setState({ audio });
+  }
+
+
+  onDataAvailable = (e) => {
+    console.log(e)
   }
 
   stopAudio = () => {
